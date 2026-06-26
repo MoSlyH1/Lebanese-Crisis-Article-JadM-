@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>اتصل بنا | مَرصَد</title>
+<meta name="description" content="تواصل مع فريق مَرصَد: ملاحظات، تصحيحات، أو أفكار لتقارير.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="/"><span class="brand__mark">مَرصَد</span><span class="brand__tag">تقارير وتحليلات</span></a>
+  </div>
+</header>
+
+<main class="page">
+  <div class="eyebrow">اتصل بنا</div>
+  <h1>راسلنا</h1>
+  <p>نقرأ كل رسالة. اكتب لنا ملاحظتك أو تصحيحك أو فكرتك، وسنعود إليك إن تركت بريدك.</p>
+
+  <div class="field">
+    <label for="cName">الاسم (اختياري)</label>
+    <input type="text" id="cName" autocomplete="name">
+  </div>
+  <div class="field">
+    <label for="cEmail">البريد الإلكتروني (اختياري)</label>
+    <input type="email" id="cEmail" autocomplete="email">
+  </div>
+  <div class="field">
+    <label for="cBody">رسالتك</label>
+    <textarea id="cBody" required></textarea>
+  </div>
+  <button class="btn" id="cSend" type="button">إرسال</button>
+  <div class="form-msg" id="cMsg" role="status" aria-live="polite"></div>
+
+  <a class="back-link" href="/">→ العودة إلى التقرير</a>
+</main>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <span class="footer__brand">مَرصَد</span>
+    <nav>
+      <a href="/about">من نحن</a><a href="/contact">اتصل بنا</a><a href="/privacy">سياسة الخصوصية</a>
+    </nav>
+    <div class="footer__copy">© ٢٠٢٦ مَرصَد · جميع الحقوق محفوظة</div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var send = document.getElementById('cSend');
+  var msg = document.getElementById('cMsg');
+  function set(t, err) { msg.textContent = t; msg.classList.toggle('error', !!err); }
+  send.addEventListener('click', function () {
+    var name = document.getElementById('cName').value.trim();
+    var email = document.getElementById('cEmail').value.trim();
+    var body = document.getElementById('cBody').value.trim();
+    if (!body) { set('من فضلك اكتب رسالتك.', true); return; }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { set('البريد الإلكتروني غير صحيح.', true); return; }
+    send.disabled = true; set('جارٍ الإرسال…', false);
+    fetch('/api/contact', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name, email: email, body: body })
+    })
+      .then(function (r) { return r.ok; })
+      .then(function (ok) {
+        if (ok) { set('وصلت رسالتك. شكراً لك!', false);
+          document.getElementById('cName').value = '';
+          document.getElementById('cEmail').value = '';
+          document.getElementById('cBody').value = '';
+        } else { set('تعذّر الإرسال. حاول مرة أخرى.', true); }
+      })
+      .catch(function () { set('تعذّر الاتصال بالخادم.', true); })
+      .finally(function () { send.disabled = false; });
+  });
+})();
+</script>
+</body>
+</html>
